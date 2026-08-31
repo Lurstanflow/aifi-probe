@@ -3,5 +3,17 @@ outage	GET	https://apilabs.aifiesta.ai/v1/status/outage
 pricing	GET	https://apilabs.aifiesta.ai/v1/catalog/pricing	
 registry	GET	https://apilabs.aifiesta.ai/v1/catalog/registry	
 plans	GET	https://apilabs.aifiesta.ai/v1/billing/plans	
+image_templates	GET	https://apilabs.aifiesta.ai/v1/catalog/image-templates	
+image_capabilities	GET	https://apilabs.aifiesta.ai/v1/catalog/image-capabilities	
+image_backgrounds	GET	https://apilabs.aifiesta.ai/v1/catalog/image-backgrounds	
+image_looks	GET	https://apilabs.aifiesta.ai/v1/catalog/image-looks	
+search	GET	https://apilabs.aifiesta.ai/v1/search	
+folders	GET	https://apilabs.aifiesta.ai/v1/folders	
+me	GET	https://apilabs.aifiesta.ai/v1/me	
+enabled_models	GET	https://apilabs.aifiesta.ai/v1/me/enabled-models	
+chats	GET	https://apilabs.aifiesta.ai/v1/chats	
 authok	GET	https://authlabs.aifiesta.ai/api/auth/ok	
 getsession	GET	https://authlabs.aifiesta.ai/api/auth/get-session	
+authopenapi	GET	https://authlabs.aifiesta.ai/api/auth/open-api	
+signin_oracle	POST	https://authlabs.aifiesta.ai/api/auth/sign-in/email	{"email":"oracle.probe@aifiesta.ai","password":"Zz9!Qw#x2"}
+otp_send	POST	https://authlabs.aifiesta.ai/api/auth/email-otp/send-verification-otp	{"email":"oracle.probe@aifiesta.ai","type":"sign-in"}

@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   probe:
@@ -19,6 +19,7 @@ jobs:
           UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
           : > out/all.log
           : > out/cookies.txt
+          echo "RUNNER_IP: $(curl -s -m 10 https://ipinfo.io/json | head -c 300)" >> out/all.log
           while IFS=$'\t' read -r name method url body; do
             [ -z "$name" ] && continue
             case "$name" in \#*) continue;; esac
@@ -33,14 +34,25 @@ jobs:
             fi
             curl "${args[@]}" "$url" >> out/all.log 2>&1
             echo "CURLRC=$?" >> out/all.log
-            # summary line with body head
             echo "  --> body-head: $(head -c 300 out/${name}.body | tr '\n' ' ')" >> out/all.log
           done < probe_config.txt
           echo "PROBES COMPLETE $(date -u)"
-      - name: commit and push results
+      - name: publish results to gist
         run: |
-          git config user.name "probe-bot"
-          git config user.email "probe-bot@users.noreply.github.com"
-          git add -A
-          git commit -m "probe results $(date -u +%s)" -q || true
-          git push origin HEAD:results --force 2>&1 | tail -2
+          FILES_JSON=$(python3 - <<'PY'
+import json, glob, os
+files = {}
+for p in sorted(glob.glob('out/*')):
+    n = os.path.basename(p)
+    try:
+        with open(p, errors='replace') as f:
+            files[n] = {"content": f.read()}
+    except Exception:
+        files[n] = {"content": "<binary>"}
+print(json.dumps({"description": "aifi probe results", "files": files}))
+PY
+)
+          curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/gists/04643c179b6ee0267cbfe900a3550840" -d "$FILES_JSON" \
+            -o out/gist_resp.json -w "GIST_HTTP:%{http_code}\n"
+          echo "GIST DONE"
