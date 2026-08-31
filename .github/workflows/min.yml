@@ -1,0 +1,7 @@
+name: min
+on: [push]
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "hello from runner"; curl -s -m 10 https://api.ipify.org; echo
