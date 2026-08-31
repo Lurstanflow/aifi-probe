@@ -1,0 +1,7 @@
+# name<TAB>method<TAB>url<TAB>body(json, no tabs)
+outage	GET	https://apilabs.aifiesta.ai/v1/status/outage	
+pricing	GET	https://apilabs.aifiesta.ai/v1/catalog/pricing	
+registry	GET	https://apilabs.aifiesta.ai/v1/catalog/registry	
+plans	GET	https://apilabs.aifiesta.ai/v1/billing/plans	
+authok	GET	https://authlabs.aifiesta.ai/api/auth/ok	
+getsession	GET	https://authlabs.aifiesta.ai/api/auth/get-session	

@@ -1,0 +1,46 @@
+name: probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: run probes from probe_config.txt
+        run: |
+          set +e
+          mkdir -p out
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          : > out/all.log
+          : > out/cookies.txt
+          while IFS=$'\t' read -r name method url body; do
+            [ -z "$name" ] && continue
+            case "$name" in \#*) continue;; esac
+            echo "=== $name | $method | $url" >> out/all.log
+            args=(-sS -m 25 --http2 -A "$UA" -H "Accept: application/json" \
+                  -H "Origin: https://fiestalabs.aifiesta.ai" \
+                  -H "Referer: https://fiestalabs.aifiesta.ai/" \
+                  -c out/cookies.txt -b out/cookies.txt \
+                  -D "out/${name}.headers" -o "out/${name}.body" -w "HTTPCODE:%{http_code} TIME:%{time_total}\n")
+            if [ "$method" = "POST" ]; then
+              args+=(-H "Content-Type: application/json" -d "$body")
+            fi
+            curl "${args[@]}" "$url" >> out/all.log 2>&1
+            echo "CURLRC=$?" >> out/all.log
+            # summary line with body head
+            echo "  --> body-head: $(head -c 300 out/${name}.body | tr '\n' ' ')" >> out/all.log
+          done < probe_config.txt
+          echo "PROBES COMPLETE $(date -u)"
+      - name: commit and push results
+        run: |
+          git config user.name "probe-bot"
+          git config user.email "probe-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "probe results $(date -u +%s)" -q || true
+          git push origin HEAD:results --force 2>&1 | tail -2
